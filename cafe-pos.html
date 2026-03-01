@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brew & Co — POS</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f5f0e8;
+    --espresso: #2c1a0e;
+    --mocha: #6b3f2a;
+    --caramel: #c8813a;
+    --latte: #d4b896;
+    --foam: #faf7f2;
+    --green: #3a7c5c;
+    --red: #b83232;
+    --shadow: 0 4px 24px rgba(44,26,14,0.10);
+    --radius: 16px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--espresso);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .page { display: none; min-height: 100vh; }
+  .page.active { display: flex; }
+
+  /* LOGIN */
+  #page-login {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--espresso);
+    position: relative;
+    overflow: hidden;
+  }
+  #page-login::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,129,58,0.18) 0%, transparent 70%);
+    top: -100px; right: -100px;
+    pointer-events: none;
+  }
+  #page-login::after {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,129,58,0.12) 0%, transparent 70%);
+    bottom: -80px; left: -80px;
+    pointer-events: none;
+  }
+  .login-card {
+    background: var(--foam);
+    border-radius: 24px;
+    padding: 52px 48px;
+    width: 420px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+    animation: fadeUp 0.6s ease both;
+    position: relative;
+    z-index: 1;
+  }
+  .logo { text-align: center; margin-bottom: 36px; }
+  .logo-icon { font-size: 40px; display: block; margin-bottom: 10px; }
+  .logo h1 { font-family: 'Playfair Display', serif; font-size: 30px; color: var(--espresso); letter-spacing: -0.5px; }
+  .logo span { font-size: 13px; color: var(--mocha); letter-spacing: 3px; text-transform: uppercase; font-weight: 500; }
+  .login-card h2 { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 28px; color: var(--mocha); }
+  .employees-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+  .employee-btn {
+    border: 2px solid var(--latte); background: white; border-radius: 14px;
+    padding: 16px 12px; cursor: pointer; transition: all 0.2s; text-align: center;
+  }
+  .employee-btn:hover, .employee-btn.selected {
+    border-color: var(--caramel); background: var(--cream);
+    transform: translateY(-2px); box-shadow: 0 6px 20px rgba(200,129,58,0.15);
+  }
+  .employee-btn .avatar {
+    width: 44px; height: 44px; border-radius: 50%; background: var(--mocha);
+    color: white; font-size: 18px; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 8px; font-weight: 600;
+  }
+  .employee-btn .name { font-size: 14px; font-weight: 600; }
+  .employee-btn .role { font-size: 11px; color: var(--mocha); margin-top: 2px; }
+  .pin-section { margin-bottom: 24px; }
+  .pin-label { font-size: 13px; font-weight: 600; color: var(--mocha); margin-bottom: 10px; letter-spacing: 0.5px; }
+  .pin-dots { display: flex; gap: 10px; justify-content: center; margin-bottom: 16px; }
+  .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--latte); transition: background 0.2s, border-color 0.2s; }
+  .pin-dot.filled { background: var(--caramel); border-color: var(--caramel); }
+  .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .numpad-btn {
+    border: none; background: var(--cream); border-radius: 12px; padding: 14px;
+    font-size: 18px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s; color: var(--espresso);
+  }
+  .numpad-btn:hover { background: var(--latte); }
+  .numpad-btn:active { transform: scale(0.95); }
+  .numpad-btn.clear { font-size: 14px; color: var(--red); }
+  .numpad-btn.enter { background: var(--espresso); color: white; font-size: 14px; }
+  .numpad-btn.enter:hover { background: var(--mocha); }
+  .login-error { color: var(--red); font-size: 13px; text-align: center; margin-top: 8px; min-height: 20px; }
+
+  /* TOPBAR */
+  .topbar {
+    background: var(--espresso); color: white;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .topbar-left { display: flex; align-items: center; gap: 16px; }
+  .topbar-logo { font-family: 'Playfair Display', serif; font-size: 20px; }
+  .topbar-cashier { font-size: 13px; color: var(--latte); }
+  .btn-signout {
+    background: none; border: 1px solid rgba(255,255,255,0.2); color: var(--latte);
+    border-radius: 8px; padding: 7px 16px; font-size: 13px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+  }
+  .btn-signout:hover { border-color: white; color: white; }
+
+  /* MENU PAGE */
+  #page-menu { flex-direction: column; background: var(--cream); }
+  .menu-layout {
+    display: grid; grid-template-columns: 1fr 360px;
+    flex: 1; overflow: hidden; height: calc(100vh - 60px);
+  }
+  .menu-panel { padding: 24px; overflow-y: auto; }
+  .category-tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+  .cat-tab {
+    padding: 8px 20px; border-radius: 100px; border: 2px solid var(--latte);
+    background: white; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; color: var(--mocha);
+  }
+  .cat-tab.active, .cat-tab:hover { background: var(--espresso); border-color: var(--espresso); color: white; }
+  .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .menu-item-card {
+    background: white; border-radius: var(--radius); padding: 20px; cursor: pointer;
+    transition: all 0.2s; box-shadow: var(--shadow); border: 2px solid transparent;
+  }
+  .menu-item-card:hover { transform: translateY(-3px); border-color: var(--caramel); box-shadow: 0 8px 32px rgba(200,129,58,0.18); }
+  .item-emoji { font-size: 36px; margin-bottom: 10px; display: block; }
+  .item-name { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  .item-desc { font-size: 12px; color: var(--mocha); line-height: 1.4; margin-bottom: 12px; }
+  .item-price { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--caramel); }
+
+  /* ORDER PANEL */
+  .order-panel {
+    background: var(--espresso); color: white;
+    display: flex; flex-direction: column; padding: 24px; overflow: hidden;
+  }
+  .order-title {
+    font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 20px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .order-count { background: var(--caramel); border-radius: 100px; padding: 2px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 600; }
+  .order-items { flex: 1; overflow-y: auto; margin-bottom: 16px; }
+  .order-item {
+    background: rgba(255,255,255,0.07); border-radius: 12px; padding: 14px; margin-bottom: 10px;
+    display: flex; gap: 12px; align-items: flex-start; animation: fadeUp 0.3s ease both;
+  }
+  .oi-info { flex: 1; }
+  .oi-name { font-weight: 600; font-size: 14px; }
+  .oi-mods { font-size: 11px; color: var(--latte); margin-top: 3px; line-height: 1.5; }
+  .oi-price { font-weight: 700; font-size: 15px; color: var(--caramel); white-space: nowrap; }
+  .qty-ctrl { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .qty-btn {
+    width: 26px; height: 26px; border-radius: 50%; border: none;
+    background: rgba(255,255,255,0.15); color: white; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+  }
+  .qty-btn:hover { background: var(--caramel); }
+  .qty-num { font-size: 14px; font-weight: 700; min-width: 20px; text-align: center; }
+  .order-empty { text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.3); font-size: 14px; }
+  .order-empty .empty-icon { font-size: 48px; display: block; margin-bottom: 12px; }
+  .order-totals { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; font-size: 14px; }
+  .total-row { display: flex; justify-content: space-between; margin-bottom: 8px; color: rgba(255,255,255,0.7); }
+  .total-row.grand { font-size: 18px; font-weight: 700; color: white; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); }
+  .btn-checkout {
+    background: var(--caramel); color: white; border: none; border-radius: 14px;
+    padding: 16px; font-size: 16px; font-weight: 700; font-family: 'DM Sans', sans-serif;
+    cursor: pointer; width: 100%; margin-top: 16px; transition: all 0.2s; letter-spacing: 0.3px;
+  }
+  .btn-checkout:hover { background: var(--mocha); transform: translateY(-1px); }
+  .btn-checkout:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(44,26,14,0.6);
+    backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--foam); border-radius: 24px; width: 500px; max-height: 90vh;
+    overflow-y: auto; padding: 36px; animation: scaleIn 0.25s ease;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.3);
+  }
+  .modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+  .modal-emoji { font-size: 48px; display: block; margin-bottom: 8px; }
+  .modal-title { font-family: 'Playfair Display', serif; font-size: 24px; }
+  .modal-price { color: var(--caramel); font-size: 18px; font-weight: 700; margin-top: 4px; }
+  .modal-close {
+    background: var(--cream); border: none; border-radius: 50%; width: 36px; height: 36px;
+    font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--mocha); flex-shrink: 0; transition: background 0.2s;
+  }
+  .modal-close:hover { background: var(--latte); }
+  .custom-section { margin-bottom: 24px; }
+  .custom-section-title { font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--mocha); margin-bottom: 12px; }
+  .options-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .opt-chip {
+    padding: 8px 16px; border-radius: 100px; border: 2px solid var(--latte); background: white;
+    font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif; color: var(--espresso);
+  }
+  .opt-chip:hover { border-color: var(--caramel); }
+  .opt-chip.selected { background: var(--espresso); border-color: var(--espresso); color: white; }
+  .notes-input {
+    width: 100%; border: 2px solid var(--latte); border-radius: 12px; padding: 12px 16px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; resize: none; height: 80px;
+    color: var(--espresso); background: white; transition: border-color 0.2s; outline: none;
+  }
+  .notes-input:focus { border-color: var(--caramel); }
+  .modal-actions { display: flex; gap: 12px; }
+  .btn-add-order {
+    flex: 1; background: var(--espresso); color: white; border: none; border-radius: 14px;
+    padding: 16px; font-size: 15px; font-weight: 700; font-family: 'DM Sans', sans-serif;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-add-order:hover { background: var(--mocha); }
+  .btn-cancel {
+    background: var(--cream); color: var(--mocha); border: none; border-radius: 14px;
+    padding: 16px 24px; font-size: 15px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .btn-cancel:hover { background: var(--latte); }
+
+  /* PAYMENT PAGE */
+  #page-payment { flex-direction: column; background: var(--cream); }
+  .payment-layout { display: grid; grid-template-columns: 1fr 420px; flex: 1; overflow: hidden; height: calc(100vh - 60px); }
+  .payment-main { padding: 36px; overflow-y: auto; }
+  .payment-main h2 { font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 8px; }
+  .payment-main .subtitle { color: var(--mocha); font-size: 14px; margin-bottom: 32px; }
+  .payment-methods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 36px; }
+  .pay-method {
+    background: white; border-radius: var(--radius); border: 3px solid var(--latte);
+    padding: 24px 16px; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
+  }
+  .pay-method:hover { border-color: var(--caramel); transform: translateY(-2px); }
+  .pay-method.selected { border-color: var(--espresso); background: var(--espresso); color: white; }
+  .pay-method .pm-icon { font-size: 32px; display: block; margin-bottom: 10px; }
+  .pay-method .pm-name { font-weight: 700; font-size: 15px; }
+  .pay-method .pm-sub { font-size: 12px; color: var(--mocha); margin-top: 4px; }
+  .pay-method.selected .pm-sub { color: var(--latte); }
+  .cash-section { display: none; }
+  .cash-section.visible { display: block; }
+  .cash-section h3 { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 16px; }
+  .cash-quick { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+  .cash-btn {
+    background: white; border: 2px solid var(--latte); border-radius: 10px; padding: 10px 20px;
+    font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    color: var(--espresso); transition: all 0.2s;
+  }
+  .cash-btn:hover, .cash-btn.selected { background: var(--caramel); border-color: var(--caramel); color: white; }
+  .cash-input-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .cash-input-wrap label { font-weight: 600; font-size: 14px; color: var(--mocha); white-space: nowrap; }
+  .cash-input {
+    border: 2px solid var(--latte); border-radius: 12px; padding: 12px 16px; font-size: 20px;
+    font-weight: 700; font-family: 'Playfair Display', serif; color: var(--espresso);
+    background: white; outline: none; transition: border-color 0.2s; width: 160px;
+  }
+  .cash-input:focus { border-color: var(--caramel); }
+  .change-display {
+    background: var(--espresso); color: white; border-radius: 14px; padding: 20px 24px;
+    display: flex; justify-content: space-between; align-items: center; font-size: 18px;
+  }
+  .change-display .change-label { color: var(--latte); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+  .change-display .change-amount { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: var(--caramel); }
+  .card-section { display: none; }
+  .card-section.visible { display: block; }
+  .card-terminal {
+    background: var(--espresso); color: white; border-radius: 20px; padding: 36px;
+    text-align: center; box-shadow: var(--shadow);
+  }
+  .terminal-icon { font-size: 64px; display: block; margin-bottom: 16px; }
+  .terminal-title { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 8px; }
+  .terminal-sub { color: var(--latte); font-size: 14px; }
+  .terminal-animate { display: flex; gap: 8px; justify-content: center; margin-top: 24px; }
+  .dot-pulse { width: 10px; height: 10px; border-radius: 50%; background: var(--caramel); animation: pulse 1.4s ease-in-out infinite; }
+  .dot-pulse:nth-child(2) { animation-delay: 0.2s; }
+  .dot-pulse:nth-child(3) { animation-delay: 0.4s; }
+  .receipt-panel {
+    background: white; padding: 32px; overflow-y: auto;
+    border-left: 2px solid var(--cream); display: flex; flex-direction: column;
+  }
+  .receipt-logo { text-align: center; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 2px dashed var(--latte); }
+  .receipt-logo h3 { font-family: 'Playfair Display', serif; font-size: 22px; }
+  .receipt-logo p { font-size: 12px; color: var(--mocha); margin-top: 4px; }
+  .receipt-items { flex: 1; margin-bottom: 20px; }
+  .receipt-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
+  .receipt-item .ri-name { flex: 1; }
+  .receipt-item .ri-mods { font-size: 11px; color: var(--mocha); margin-top: 2px; }
+  .receipt-item .ri-price { font-weight: 700; }
+  .receipt-divider { border: none; border-top: 2px dashed var(--latte); margin: 16px 0; }
+  .receipt-totals { font-size: 14px; }
+  .receipt-row { display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--mocha); }
+  .receipt-row.total { font-size: 18px; font-weight: 800; color: var(--espresso); }
+  .btn-complete-pay {
+    background: var(--green); color: white; border: none; border-radius: 14px; padding: 18px;
+    font-size: 16px; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer;
+    transition: all 0.2s; margin-top: 24px; opacity: 0.4; pointer-events: none;
+  }
+  .btn-complete-pay.ready { opacity: 1; pointer-events: all; }
+  .btn-complete-pay.ready:hover { background: #2d6649; transform: translateY(-1px); }
+  .btn-back-menu {
+    background: none; border: 2px solid var(--latte); border-radius: 14px; padding: 14px;
+    font-size: 15px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer;
+    color: var(--mocha); margin-top: 10px; transition: all 0.2s;
+  }
+  .btn-back-menu:hover { border-color: var(--caramel); color: var(--caramel); }
+
+  /* SUCCESS */
+  .success-overlay {
+    display: none; position: fixed; inset: 0; background: var(--green); z-index: 200;
+    align-items: center; justify-content: center; flex-direction: column; text-align: center;
+  }
+  .success-overlay.open { display: flex; animation: fadeIn 0.3s ease; }
+  .success-icon { font-size: 80px; margin-bottom: 24px; animation: pop 0.5s ease 0.2s both; }
+  .success-overlay h2 { font-family: 'Playfair Display', serif; font-size: 36px; color: white; margin-bottom: 12px; }
+  .success-overlay p { color: rgba(255,255,255,0.8); font-size: 16px; }
+  .success-change { background: rgba(255,255,255,0.15); border-radius: 16px; padding: 20px 40px; margin: 24px 0; }
+  .success-change .sc-label { color: rgba(255,255,255,0.7); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+  .success-change .sc-amount { font-family: 'Playfair Display', serif; font-size: 40px; color: white; font-weight: 700; }
+  .btn-new-order {
+    background: white; color: var(--green); border: none; border-radius: 14px;
+    padding: 18px 48px; font-size: 16px; font-weight: 800; font-family: 'DM Sans', sans-serif;
+    cursor: pointer; margin-top: 12px; transition: all 0.2s;
+  }
+  .btn-new-order:hover { transform: scale(1.05); }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
+  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--latte); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div class="page active" id="page-login">
+  <div class="login-card">
+    <div class="logo">
+      <span class="logo-icon">&#9749;</span>
+      <h1>Brew &amp; Co</h1>
+      <span>Point of Sale</span>
+    </div>
+    <h2>Select Employee</h2>
+    <div class="employees-grid">
+      <div class="employee-btn" onclick="selectEmployee(this,'Maya','Barista')" data-pin="1234">
+        <div class="avatar">M</div>
+        <div class="name">Maya</div><div class="role">Barista</div>
+      </div>
+      <div class="employee-btn" onclick="selectEmployee(this,'Jordan','Barista')" data-pin="5678">
+        <div class="avatar" style="background:#6b3f2a">J</div>
+        <div class="name">Jordan</div><div class="role">Barista</div>
+      </div>
+      <div class="employee-btn" onclick="selectEmployee(this,'Sam','Shift Lead')" data-pin="9012">
+        <div class="avatar" style="background:#3a7c5c">S</div>
+        <div class="name">Sam</div><div class="role">Shift Lead</div>
+      </div>
+      <div class="employee-btn" onclick="selectEmployee(this,'Alex','Manager')" data-pin="3456">
+        <div class="avatar" style="background:#c8813a">A</div>
+        <div class="name">Alex</div><div class="role">Manager</div>
+      </div>
+    </div>
+    <div class="pin-section">
+      <div class="pin-label">Enter PIN</div>
+      <div class="pin-dots">
+        <div class="pin-dot" id="dot0"></div>
+        <div class="pin-dot" id="dot1"></div>
+        <div class="pin-dot" id="dot2"></div>
+        <div class="pin-dot" id="dot3"></div>
+      </div>
+      <div class="numpad">
+        <button class="numpad-btn" onclick="enterPin('1')">1</button>
+        <button class="numpad-btn" onclick="enterPin('2')">2</button>
+        <button class="numpad-btn" onclick="enterPin('3')">3</button>
+        <button class="numpad-btn" onclick="enterPin('4')">4</button>
+        <button class="numpad-btn" onclick="enterPin('5')">5</button>
+        <button class="numpad-btn" onclick="enterPin('6')">6</button>
+        <button class="numpad-btn" onclick="enterPin('7')">7</button>
+        <button class="numpad-btn" onclick="enterPin('8')">8</button>
+        <button class="numpad-btn" onclick="enterPin('9')">9</button>
+        <button class="numpad-btn clear" onclick="clearPin()">&#9003; Clear</button>
+        <button class="numpad-btn" onclick="enterPin('0')">0</button>
+        <button class="numpad-btn enter" onclick="submitLogin()">Sign In</button>
+      </div>
+      <div class="login-error" id="login-error"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MENU PAGE -->
+<div class="page" id="page-menu">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">&#9749; Brew &amp; Co</div>
+      <div class="topbar-cashier" id="cashier-name">Cashier: &mdash;</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-signout" onclick="signOut()">Sign Out</button>
+    </div>
+  </div>
+  <div class="menu-layout">
+    <div class="menu-panel">
+      <div class="category-tabs" id="cat-tabs"></div>
+      <div class="menu-grid" id="menu-grid"></div>
+    </div>
+    <div class="order-panel">
+      <div class="order-title">
+        Current Order
+        <span class="order-count" id="order-count">0</span>
+      </div>
+      <div class="order-items" id="order-items">
+        <div class="order-empty">
+          <span class="empty-icon">&#128721;</span>
+          No items yet.<br>Tap a menu item to add.
+        </div>
+      </div>
+      <div class="order-totals">
+        <div class="total-row"><span>Subtotal</span><span id="sub-total">$0.00</span></div>
+        <div class="total-row"><span>Tax (8.5%)</span><span id="tax-total">$0.00</span></div>
+        <div class="total-row grand"><span>Total</span><span id="grand-total">$0.00</span></div>
+      </div>
+      <button class="btn-checkout" id="btn-checkout" onclick="goToPayment()" disabled>
+        Proceed to Payment &rarr;
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT PAGE -->
+<div class="page" id="page-payment">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">&#9749; Brew &amp; Co</div>
+      <div class="topbar-cashier">Payment</div>
+    </div>
+  </div>
+  <div class="payment-layout">
+    <div class="payment-main">
+      <h2>Select Payment Method</h2>
+      <p class="subtitle">Choose how the customer would like to pay.</p>
+      <div class="payment-methods">
+        <div class="pay-method" id="pm-cash" onclick="selectPayMethod('cash')">
+          <span class="pm-icon">&#128181;</span>
+          <div class="pm-name">Cash</div>
+          <div class="pm-sub">Count change</div>
+        </div>
+        <div class="pay-method" id="pm-card" onclick="selectPayMethod('card')">
+          <span class="pm-icon">&#128179;</span>
+          <div class="pm-name">Card</div>
+          <div class="pm-sub">Tap, swipe or chip</div>
+        </div>
+        <div class="pay-method" id="pm-mobile" onclick="selectPayMethod('mobile')">
+          <span class="pm-icon">&#128241;</span>
+          <div class="pm-name">Mobile Pay</div>
+          <div class="pm-sub">Apple / Google Pay</div>
+        </div>
+      </div>
+      <div class="cash-section" id="cash-section">
+        <h3>Cash Tendered</h3>
+        <div class="cash-quick" id="cash-quick-btns"></div>
+        <div class="cash-input-wrap">
+          <label>Custom amount: $</label>
+          <input class="cash-input" type="number" id="cash-input" placeholder="0.00" min="0" step="0.01" oninput="calcChange()">
+        </div>
+        <div class="change-display">
+          <div>
+            <div class="change-label">Change Due</div>
+            <div class="change-amount" id="change-due">$0.00</div>
+          </div>
+          <span style="font-size:32px">&#128176;</span>
+        </div>
+      </div>
+      <div class="card-section" id="card-section">
+        <div class="card-terminal">
+          <span class="terminal-icon">&#128179;</span>
+          <div class="terminal-title">Awaiting Card</div>
+          <div class="terminal-sub">Please tap, insert, or swipe card on terminal</div>
+          <div class="terminal-animate">
+            <div class="dot-pulse"></div>
+            <div class="dot-pulse"></div>
+            <div class="dot-pulse"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card-section" id="mobile-section">
+        <div class="card-terminal">
+          <span class="terminal-icon">&#128242;</span>
+          <div class="terminal-title">Hold Device to Reader</div>
+          <div class="terminal-sub">Apple Pay or Google Pay</div>
+          <div class="terminal-animate">
+            <div class="dot-pulse"></div>
+            <div class="dot-pulse"></div>
+            <div class="dot-pulse"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="receipt-panel">
+      <div class="receipt-logo">
+        <h3>&#9749; Brew &amp; Co</h3>
+        <p>123 Main St &middot; Long Branch, NJ &middot; (732) 555-0190</p>
+      </div>
+      <div class="receipt-items" id="receipt-items"></div>
+      <hr class="receipt-divider">
+      <div class="receipt-totals">
+        <div class="receipt-row"><span>Subtotal</span><span id="r-sub">$0.00</span></div>
+        <div class="receipt-row"><span>Tax (8.5%)</span><span id="r-tax">$0.00</span></div>
+        <div class="receipt-row total"><span>Total</span><span id="r-total">$0.00</span></div>
+      </div>
+      <button class="btn-complete-pay" id="btn-complete-pay" onclick="completePay()">
+        &#10003; Complete Payment
+      </button>
+      <button class="btn-back-menu" onclick="backToMenu()">&larr; Back to Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOMIZATION MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <span class="modal-emoji" id="mod-emoji"></span>
+        <div class="modal-title" id="mod-title"></div>
+        <div class="modal-price" id="mod-price"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">&#10005;</button>
+    </div>
+    <div id="modal-customs"></div>
+    <div class="custom-section">
+      <div class="custom-section-title">Special Instructions</div>
+      <textarea class="notes-input" id="mod-notes" placeholder="E.g. extra hot, no foam, allergy info..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-add-order" onclick="addToOrder()">Add to Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="success-overlay" id="success-overlay">
+  <div class="success-icon">&#9989;</div>
+  <h2>Payment Complete!</h2>
+  <p>Thank you for visiting Brew &amp; Co</p>
+  <div class="success-change" id="success-change-box" style="display:none">
+    <div class="sc-label">Change Due</div>
+    <div class="sc-amount" id="success-change-amt"></div>
+  </div>
+  <button class="btn-new-order" onclick="newOrder()">Start New Order</button>
+</div>
+
+<script>
+const MENU = [
+  {id:1,cat:'Coffee',emoji:'&#9749;',name:'Espresso',price:2.75,desc:'Rich &amp; bold single shot',
+    customs:[
+      {label:'Shot',type:'single',options:['Single','Double (+$0.50)'],selected:'Single'},
+      {label:'Temperature',type:'single',options:['Hot','Extra Hot','Iced (+$0.50)'],selected:'Hot'}
+    ]},
+  {id:2,cat:'Coffee',emoji:'&#129483;',name:'Latte',price:5.25,desc:'Espresso with steamed milk',
+    customs:[
+      {label:'Size',type:'single',options:['Small (12oz)','Medium (16oz +$0.50)','Large (20oz +$1.00)'],selected:'Small (12oz)'},
+      {label:'Milk',type:'single',options:['Whole','Oat (+$0.75)','Almond (+$0.75)','Skim'],selected:'Whole'},
+      {label:'Shots',type:'single',options:['1 Shot','2 Shots (+$0.50)','3 Shots (+$1.00)'],selected:'1 Shot'},
+      {label:'Syrup',type:'multi',options:['Vanilla (+$0.50)','Caramel (+$0.50)','Hazelnut (+$0.50)'],selected:[]},
+      {label:'Temperature',type:'single',options:['Hot','Iced'],selected:'Hot'}
+    ]},
+  {id:3,cat:'Coffee',emoji:'&#127751;',name:'Cappuccino',price:4.75,desc:'Espresso &amp; microfoam',
+    customs:[
+      {label:'Size',type:'single',options:['Small','Medium (+$0.50)'],selected:'Small'},
+      {label:'Milk',type:'single',options:['Whole','Oat (+$0.75)','Skim'],selected:'Whole'},
+      {label:'Style',type:'single',options:['Standard','Dry (more foam)','Wet (more milk)'],selected:'Standard'}
+    ]},
+  {id:4,cat:'Coffee',emoji:'&#10052;&#65039;',name:'Cold Brew',price:5.50,desc:'Slow-steeped 12 hrs',
+    customs:[
+      {label:'Size',type:'single',options:['12oz','16oz (+$0.75)'],selected:'12oz'},
+      {label:'Add-ons',type:'multi',options:['Oat Milk (+$0.75)','Sweet Cream (+$0.75)','Vanilla Syrup (+$0.50)'],selected:[]}
+    ]},
+  {id:5,cat:'Coffee',emoji:'&#127810;',name:'Pumpkin Latte',price:6.00,desc:'Seasonal fall special',
+    customs:[
+      {label:'Size',type:'single',options:['Medium','Large (+$0.75)'],selected:'Medium'},
+      {label:'Milk',type:'single',options:['Whole','Oat (+$0.75)','Skim'],selected:'Whole'},
+      {label:'Whip',type:'single',options:['Yes','No'],selected:'Yes'}
+    ]},
+  {id:6,cat:'Tea',emoji:'&#127861;',name:'Matcha Latte',price:5.75,desc:'Ceremonial grade matcha',
+    customs:[
+      {label:'Milk',type:'single',options:['Oat','Almond','Whole'],selected:'Oat'},
+      {label:'Sweetness',type:'single',options:['Unsweetened','Light','Regular','Extra Sweet'],selected:'Regular'},
+      {label:'Temperature',type:'single',options:['Hot','Iced'],selected:'Hot'}
+    ]},
+  {id:7,cat:'Tea',emoji:'&#127807;',name:'Herbal Tea',price:3.50,desc:'Organic loose-leaf blend',
+    customs:[
+      {label:'Blend',type:'single',options:['Chamomile','Peppermint','Hibiscus','Ginger Lemon'],selected:'Chamomile'},
+      {label:'Honey',type:'single',options:['None','Local Honey (+$0.50)'],selected:'None'}
+    ]},
+  {id:8,cat:'Tea',emoji:'&#9924;',name:'Iced Chai',price:5.25,desc:'Spiced chai over ice',
+    customs:[
+      {label:'Size',type:'single',options:['Medium','Large (+$0.75)'],selected:'Medium'},
+      {label:'Milk',type:'single',options:['Oat','Whole','Almond (+$0.25)'],selected:'Oat'},
+      {label:'Sweetness',type:'single',options:['Light','Regular','Sweet'],selected:'Regular'}
+    ]},
+  {id:9,cat:'Food',emoji:'&#129360;',name:'Croissant',price:3.75,desc:'Buttery, flaky, classic',
+    customs:[
+      {label:'Temperature',type:'single',options:['Warmed','Room Temp'],selected:'Warmed'},
+      {label:'Add-on',type:'single',options:['Plain','Butter (+$0.25)','Jam (+$0.50)'],selected:'Plain'}
+    ]},
+  {id:10,cat:'Food',emoji:'&#129379;',name:'Avocado Toast',price:8.50,desc:'Sourdough, avo, sea salt',
+    customs:[
+      {label:'Extras',type:'multi',options:['Egg (+$1.50)','Red Pepper Flakes','Feta Cheese (+$0.75)','Everything Bagel Seasoning'],selected:[]}
+    ]},
+  {id:11,cat:'Food',emoji:'&#127856;',name:'Slice of Cake',price:5.00,desc:"Ask for today's selection",
+    customs:[
+      {label:'Flavor',type:'single',options:['Lemon Ricotta','Chocolate Fudge','Carrot'],selected:'Lemon Ricotta'},
+      {label:'Warmed',type:'single',options:['No','Warmed'],selected:'No'}
+    ]},
+  {id:12,cat:'Drinks',emoji:'&#129380;',name:'Lemonade',price:3.75,desc:'Fresh-squeezed daily',
+    customs:[
+      {label:'Style',type:'single',options:['Classic','Strawberry (+$0.50)','Lavender (+$0.50)'],selected:'Classic'},
+      {label:'Sparkling',type:'single',options:['Still','Sparkling (+$0.25)'],selected:'Still'}
+    ]}
+];
+
+const CATS = ['All',...new Set(MENU.map(i=>i.cat))];
+const TAX_RATE = 0.085;
+
+let currentEmployee=null, currentPin=null, pinEntered='', order=[], modalItem=null, modalSelections={}, payMethod=null;
+
+function selectEmployee(btn,name,role){
+  document.querySelectorAll('.employee-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  currentEmployee={name,role}; currentPin=btn.dataset.pin;
+  clearPin(); document.getElementById('login-error').textContent='';
+}
+function enterPin(d){ if(pinEntered.length>=4)return; pinEntered+=d; updateDots(); }
+function clearPin(){ pinEntered=''; updateDots(); }
+function updateDots(){ for(let i=0;i<4;i++) document.getElementById('dot'+i).classList.toggle('filled',i<pinEntered.length); }
+function submitLogin(){
+  const err=document.getElementById('login-error');
+  if(!currentEmployee){err.textContent='Please select an employee.';return;}
+  if(pinEntered.length<4){err.textContent='Please enter your 4-digit PIN.';return;}
+  if(pinEntered!==currentPin){err.textContent='Incorrect PIN. Try again.';clearPin();return;}
+  err.textContent='';
+  document.getElementById('cashier-name').textContent='Cashier: '+currentEmployee.name;
+  showPage('page-menu'); buildMenu('All');
+}
+
+function buildMenu(cat){
+  document.getElementById('cat-tabs').innerHTML=CATS.map(c=>
+    `<button class="cat-tab ${c===cat?'active':''}" onclick="buildMenu('${c}')">${c}</button>`
+  ).join('');
+  const items=cat==='All'?MENU:MENU.filter(i=>i.cat===cat);
+  document.getElementById('menu-grid').innerHTML=items.map(item=>`
+    <div class="menu-item-card" onclick="openModal(${item.id})">
+      <span class="item-emoji">${item.emoji}</span>
+      <div class="item-name">${item.name}</div>
+      <div class="item-desc">${item.desc}</div>
+      <div class="item-price">$${item.price.toFixed(2)}</div>
+    </div>
+  `).join('');
+}
+
+function openModal(id){
+  modalItem=MENU.find(i=>i.id===id); modalSelections={};
+  modalItem.customs.forEach(c=>{ modalSelections[c.label]=c.type==='multi'?[...c.selected]:c.selected; });
+  document.getElementById('mod-emoji').innerHTML=modalItem.emoji;
+  document.getElementById('mod-title').textContent=modalItem.name;
+  document.getElementById('mod-price').textContent='$'+modalItem.price.toFixed(2);
+  document.getElementById('mod-notes').value='';
+  document.getElementById('modal-customs').innerHTML=modalItem.customs.map(c=>`
+    <div class="custom-section">
+      <div class="custom-section-title">${c.label}</div>
+      <div class="options-grid">
+        ${c.options.map(opt=>{
+          const cm=opt.match(/\+\$(\d+\.\d+)/);
+          const sel=c.type==='multi'?c.selected.includes(opt):opt===c.selected;
+          const label=opt.replace(/ \(\+\$[\d.]+\)/,'');
+          return `<button class="opt-chip ${sel?'selected':''}" data-label="${c.label}" data-opt="${opt}" data-type="${c.type}" onclick="selectOpt('${c.label}','${opt}','${c.type}',this)">${label}${cm?' (+$'+cm[1]+')':''}</button>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('modal').classList.add('open');
+}
+
+function selectOpt(label,opt,type,btn){
+  if(type==='single'){
+    modalSelections[label]=opt;
+    btn.closest('.options-grid').querySelectorAll('.opt-chip').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+  } else {
+    if(!modalSelections[label])modalSelections[label]=[];
+    const idx=modalSelections[label].indexOf(opt);
+    if(idx>-1){modalSelections[label].splice(idx,1);btn.classList.remove('selected');}
+    else{modalSelections[label].push(opt);btn.classList.add('selected');}
+  }
+}
+
+function calcExtraCost(){
+  let extra=0;
+  Object.values(modalSelections).forEach(v=>{
+    const arr=Array.isArray(v)?v:[v];
+    arr.forEach(opt=>{ const m=opt.match(/\+\$(\d+\.\d+)/); if(m)extra+=parseFloat(m[1]); });
+  });
+  return extra;
+}
+
+function addToOrder(){
+  const extra=calcExtraCost();
+  const mods=[];
+  Object.entries(modalSelections).forEach(([label,val])=>{
+    const arr=Array.isArray(val)?val:[val];
+    const cleaned=arr.filter(o=>o!=='None').map(o=>o.replace(/ \(\+\$[\d.]+\)/,''));
+    if(cleaned.length)mods.push(label+': '+cleaned.join(', '));
+  });
+  const notes=document.getElementById('mod-notes').value.trim();
+  if(notes)mods.push('Note: '+notes);
+  order.push({id:Date.now(),item:modalItem,qty:1,price:modalItem.price+extra,mods});
+  closeModal(); renderOrder();
+}
+function closeModal(){ document.getElementById('modal').classList.remove('open'); modalItem=null; }
+
+function renderOrder(){
+  const el=document.getElementById('order-items');
+  if(order.length===0){
+    el.innerHTML=`<div class="order-empty"><span class="empty-icon">&#128721;</span>No items yet.<br>Tap a menu item to add.</div>`;
+  } else {
+    el.innerHTML=order.map(o=>`
+      <div class="order-item">
+        <span style="font-size:24px">${o.item.emoji}</span>
+        <div class="oi-info">
+          <div class="oi-name">${o.item.name}</div>
+          ${o.mods.length?`<div class="oi-mods">${o.mods.join(' &middot; ')}</div>`:''}
+          <div class="qty-ctrl">
+            <button class="qty-btn" onclick="changeQty(${o.id},-1)">&#8722;</button>
+            <span class="qty-num">${o.qty}</span>
+            <button class="qty-btn" onclick="changeQty(${o.id},1)">+</button>
+          </div>
+        </div>
+        <div class="oi-price">$${(o.price*o.qty).toFixed(2)}</div>
+      </div>
+    `).join('');
+  }
+  updateTotals();
+}
+
+function changeQty(id,delta){
+  const idx=order.findIndex(o=>o.id===id); if(idx<0)return;
+  order[idx].qty+=delta;
+  if(order[idx].qty<=0)order.splice(idx,1);
+  renderOrder();
+}
+
+function updateTotals(){
+  const sub=order.reduce((s,o)=>s+o.price*o.qty,0);
+  const tax=sub*TAX_RATE, grand=sub+tax;
+  document.getElementById('sub-total').textContent='$'+sub.toFixed(2);
+  document.getElementById('tax-total').textContent='$'+tax.toFixed(2);
+  document.getElementById('grand-total').textContent='$'+grand.toFixed(2);
+  document.getElementById('order-count').textContent=order.reduce((s,o)=>s+o.qty,0);
+  document.getElementById('btn-checkout').disabled=order.length===0;
+}
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function signOut(){
+  currentEmployee=null;currentPin=null;pinEntered='';order=[];
+  document.querySelectorAll('.employee-btn').forEach(b=>b.classList.remove('selected'));
+  clearPin(); document.getElementById('login-error').textContent='';
+  showPage('page-login');
+}
+
+function goToPayment(){
+  if(order.length===0)return;
+  buildReceipt(); payMethod=null;
+  document.querySelectorAll('.pay-method').forEach(p=>p.classList.remove('selected'));
+  ['cash-section','card-section','mobile-section'].forEach(id=>document.getElementById(id).classList.remove('visible'));
+  document.getElementById('btn-complete-pay').classList.remove('ready');
+  document.getElementById('cash-input').value='';
+  document.getElementById('change-due').textContent='$0.00';
+  showPage('page-payment');
+}
+function backToMenu(){ showPage('page-menu'); }
+
+function getGrandTotal(){ const sub=order.reduce((s,o)=>s+o.price*o.qty,0); return sub+sub*TAX_RATE; }
+
+function buildReceipt(){
+  const sub=order.reduce((s,o)=>s+o.price*o.qty,0);
+  const tax=sub*TAX_RATE, grand=sub+tax;
+  document.getElementById('r-sub').textContent='$'+sub.toFixed(2);
+  document.getElementById('r-tax').textContent='$'+tax.toFixed(2);
+  document.getElementById('r-total').textContent='$'+grand.toFixed(2);
+  document.getElementById('receipt-items').innerHTML=order.map(o=>`
+    <div class="receipt-item">
+      <div>
+        <div class="ri-name">${o.item.emoji} ${o.item.name} &times; ${o.qty}</div>
+        ${o.mods.length?`<div class="ri-mods">${o.mods.join(', ')}</div>`:''}
+      </div>
+      <div class="ri-price">$${(o.price*o.qty).toFixed(2)}</div>
+    </div>
+  `).join('');
+}
+
+function selectPayMethod(method){
+  payMethod=method;
+  document.querySelectorAll('.pay-method').forEach(p=>p.classList.remove('selected'));
+  document.getElementById('pm-'+method).classList.add('selected');
+  ['cash-section','card-section','mobile-section'].forEach(id=>document.getElementById(id).classList.remove('visible'));
+  const btn=document.getElementById('btn-complete-pay');
+  btn.classList.remove('ready');
+  if(method==='cash'){
+    document.getElementById('cash-section').classList.add('visible');
+    buildQuickCash();
+  } else if(method==='card'){
+    document.getElementById('card-section').classList.add('visible');
+    setTimeout(()=>btn.classList.add('ready'),1500);
+  } else {
+    document.getElementById('mobile-section').classList.add('visible');
+    setTimeout(()=>btn.classList.add('ready'),1500);
+  }
+}
+
+function buildQuickCash(){
+  const grand=getGrandTotal();
+  const amounts=[...new Set([Math.ceil(grand),Math.ceil(grand/5)*5,Math.ceil(grand/10)*10,Math.ceil(grand/20)*20])].slice(0,4);
+  document.getElementById('cash-quick-btns').innerHTML=amounts.map(a=>
+    `<button class="cash-btn" onclick="setCash(${a},this)">$${a.toFixed(0)}</button>`
+  ).join('');
+}
+
+function setCash(amount,el){
+  document.getElementById('cash-input').value=amount.toFixed(2);
+  document.querySelectorAll('.cash-btn').forEach(b=>b.classList.remove('selected'));
+  if(el)el.classList.add('selected');
+  calcChange();
+}
+
+function calcChange(){
+  const tendered=parseFloat(document.getElementById('cash-input').value)||0;
+  const grand=getGrandTotal(); const change=tendered-grand;
+  document.getElementById('change-due').textContent=change>=0?'$'+change.toFixed(2):'—';
+  const btn=document.getElementById('btn-complete-pay');
+  if(change>=0)btn.classList.add('ready'); else btn.classList.remove('ready');
+}
+
+function completePay(){
+  const grand=getGrandTotal();
+  const changeBox=document.getElementById('success-change-box');
+  if(payMethod==='cash'){
+    const tendered=parseFloat(document.getElementById('cash-input').value)||0;
+    const change=tendered-grand;
+    changeBox.style.display='block';
+    document.getElementById('success-change-amt').textContent='$'+change.toFixed(2);
+  } else { changeBox.style.display='none'; }
+  document.getElementById('success-overlay').classList.add('open');
+}
+
+function newOrder(){
+  order=[]; payMethod=null;
+  document.getElementById('success-overlay').classList.remove('open');
+  showPage('page-menu'); buildMenu('All'); renderOrder();
+}
+</script>
+</body>
+</html>
