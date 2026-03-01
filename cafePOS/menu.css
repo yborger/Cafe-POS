@@ -1,0 +1,228 @@
+/* ============================================================
+   MENU.CSS — Menu browsing & order panel styles
+   ============================================================ */
+
+#page-menu {
+  flex-direction: column;
+  background: var(--cream);
+}
+
+.menu-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  flex: 1;
+  overflow: hidden;
+  height: calc(100vh - var(--topbar-h));
+}
+
+/* ── Left: item browser ── */
+.menu-panel {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.cat-tab {
+  padding: 8px 20px;
+  border-radius: 100px;
+  border: 2px solid var(--latte);
+  background: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--mocha);
+}
+.cat-tab:hover,
+.cat-tab.active {
+  background: var(--espresso);
+  border-color: var(--espresso);
+  color: white;
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.menu-item-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow);
+  border: 2px solid transparent;
+}
+.menu-item-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--caramel);
+  box-shadow: 0 8px 32px rgba(200, 129, 58, 0.18);
+}
+
+.item-emoji {
+  font-size: 36px;
+  margin-bottom: 10px;
+  display: block;
+}
+.item-name {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+.item-desc {
+  font-size: 12px;
+  color: var(--mocha);
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+.item-price {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--caramel);
+}
+
+/* ── Right: order panel ── */
+.order-panel {
+  background: var(--espresso);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  overflow: hidden;
+}
+
+.order-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.order-count {
+  background: var(--caramel);
+  border-radius: 100px;
+  padding: 2px 12px;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+}
+
+.order-items {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+.order-item {
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  animation: fadeUp 0.3s ease both;
+}
+.oi-info { flex: 1; }
+.oi-name { font-weight: 600; font-size: 14px; }
+.oi-mods {
+  font-size: 11px;
+  color: var(--latte);
+  margin-top: 3px;
+  line-height: 1.5;
+}
+.oi-price {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--caramel);
+  white-space: nowrap;
+}
+
+.qty-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.qty-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.qty-btn:hover { background: var(--caramel); }
+.qty-num {
+  font-size: 14px;
+  font-weight: 700;
+  min-width: 20px;
+  text-align: center;
+}
+
+.order-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 14px;
+}
+.order-empty .empty-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+/* Totals */
+.order-totals {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 16px;
+  font-size: 14px;
+}
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.7);
+}
+.total-row.grand {
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-checkout {
+  background: var(--caramel);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 16px;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+.btn-checkout:hover    { background: var(--mocha); transform: translateY(-1px); }
+.btn-checkout:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }

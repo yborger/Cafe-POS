@@ -1,0 +1,239 @@
+/* ============================================================
+   PAYMENT.CSS — Payment page & receipt panel styles
+   ============================================================ */
+
+#page-payment {
+  flex-direction: column;
+  background: var(--cream);
+}
+
+.payment-layout {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  flex: 1;
+  overflow: hidden;
+  height: calc(100vh - var(--topbar-h));
+}
+
+/* ── Left: method selection ── */
+.payment-main {
+  padding: 36px;
+  overflow-y: auto;
+}
+.payment-main h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+.payment-main .subtitle {
+  color: var(--mocha);
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+
+.payment-methods {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 36px;
+}
+.pay-method {
+  background: white;
+  border-radius: var(--radius);
+  border: 3px solid var(--latte);
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow);
+}
+.pay-method:hover            { border-color: var(--caramel); transform: translateY(-2px); }
+.pay-method.selected         { border-color: var(--espresso); background: var(--espresso); color: white; }
+.pay-method .pm-icon         { font-size: 32px; display: block; margin-bottom: 10px; }
+.pay-method .pm-name         { font-weight: 700; font-size: 15px; }
+.pay-method .pm-sub          { font-size: 12px; color: var(--mocha); margin-top: 4px; }
+.pay-method.selected .pm-sub { color: var(--latte); }
+
+/* ── Cash section ── */
+.cash-section         { display: none; }
+.cash-section.visible { display: block; }
+
+.cash-section h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+.cash-quick {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.cash-btn {
+  background: white;
+  border: 2px solid var(--latte);
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--espresso);
+  transition: all 0.2s;
+}
+.cash-btn:hover,
+.cash-btn.selected { background: var(--caramel); border-color: var(--caramel); color: white; }
+
+.cash-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.cash-input-wrap label {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--mocha);
+  white-space: nowrap;
+}
+.cash-input {
+  border: 2px solid var(--latte);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: 'Playfair Display', serif;
+  color: var(--espresso);
+  background: white;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 160px;
+}
+.cash-input:focus { border-color: var(--caramel); }
+
+.change-display {
+  background: var(--espresso);
+  color: white;
+  border-radius: 14px;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 18px;
+}
+.change-label  { color: var(--latte); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+.change-amount { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: var(--caramel); }
+
+/* ── Card / Mobile sections ── */
+.card-section         { display: none; }
+.card-section.visible { display: block; }
+
+.card-terminal {
+  background: var(--espresso);
+  color: white;
+  border-radius: 20px;
+  padding: 36px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.terminal-icon  { font-size: 64px; display: block; margin-bottom: 16px; }
+.terminal-title { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 8px; }
+.terminal-sub   { color: var(--latte); font-size: 14px; }
+
+.terminal-animate {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 24px;
+}
+.dot-pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--caramel);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+.dot-pulse:nth-child(2) { animation-delay: 0.2s; }
+.dot-pulse:nth-child(3) { animation-delay: 0.4s; }
+
+/* ── Right: receipt panel ── */
+.receipt-panel {
+  background: white;
+  padding: 32px;
+  overflow-y: auto;
+  border-left: 2px solid var(--cream);
+  display: flex;
+  flex-direction: column;
+}
+.receipt-logo {
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 2px dashed var(--latte);
+}
+.receipt-logo h3 { font-family: 'Playfair Display', serif; font-size: 22px; }
+.receipt-logo p  { font-size: 12px; color: var(--mocha); margin-top: 4px; }
+
+.receipt-items { flex: 1; margin-bottom: 20px; }
+
+.receipt-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+.receipt-item .ri-name  { flex: 1; }
+.receipt-item .ri-mods  { font-size: 11px; color: var(--mocha); margin-top: 2px; }
+.receipt-item .ri-price { font-weight: 700; }
+
+.receipt-divider {
+  border: none;
+  border-top: 2px dashed var(--latte);
+  margin: 16px 0;
+}
+
+.receipt-totals { font-size: 14px; }
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: var(--mocha);
+}
+.receipt-row.total {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--espresso);
+}
+
+.btn-complete-pay {
+  background: var(--green);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 18px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 24px;
+  opacity: 0.4;
+  pointer-events: none;
+}
+.btn-complete-pay.ready               { opacity: 1; pointer-events: all; }
+.btn-complete-pay.ready:hover         { background: #2d6649; transform: translateY(-1px); }
+
+.btn-back-menu {
+  background: none;
+  border: 2px solid var(--latte);
+  border-radius: 14px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  color: var(--mocha);
+  margin-top: 10px;
+  transition: all 0.2s;
+}
+.btn-back-menu:hover { border-color: var(--caramel); color: var(--caramel); }

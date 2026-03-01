@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brew &amp; Co — POS</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/login.css">
+  <link rel="stylesheet" href="css/menu.css">
+  <link rel="stylesheet" href="css/payment.css">
+  <link rel="stylesheet" href="css/modal.css">
+</head>
+<body>
+
+  <!-- ═══ LOGIN PAGE ═══ -->
+  <div class="page active" id="page-login">
+    <div class="login-card">
+      <div class="logo">
+        <span class="logo-icon">&#9749;</span>
+        <h1>Brew &amp; Co</h1>
+        <span>Point of Sale</span>
+      </div>
+      <h2>Select Employee</h2>
+      <div class="employees-grid" id="employees-grid"></div>
+      <div class="pin-section">
+        <div class="pin-label">Enter PIN</div>
+        <div class="pin-dots">
+          <div class="pin-dot" id="dot0"></div>
+          <div class="pin-dot" id="dot1"></div>
+          <div class="pin-dot" id="dot2"></div>
+          <div class="pin-dot" id="dot3"></div>
+        </div>
+        <div class="numpad">
+          <button class="numpad-btn" onclick="Auth.enterPin('1')">1</button>
+          <button class="numpad-btn" onclick="Auth.enterPin('2')">2</button>
+          <button class="numpad-btn" onclick="Auth.enterPin('3')">3</button>
+          <button class="numpad-btn" onclick="Auth.enterPin('4')">4</button>
+          <button class="numpad-btn" onclick="Auth.enterPin('5')">5</button>
+          <button class="numpad-btn" onclick="Auth.enterPin('6')">6</button>
+          <button class="numpad-btn" onclick="Auth.enterPin('7')">7</button>
+          <button class="numpad-btn" onclick="Auth.enterPin('8')">8</button>
+          <button class="numpad-btn" onclick="Auth.enterPin('9')">9</button>
+          <button class="numpad-btn clear" onclick="Auth.clearPin()">&#9003; Clear</button>
+          <button class="numpad-btn" onclick="Auth.enterPin('0')">0</button>
+          <button class="numpad-btn enter" onclick="Auth.submit()">Sign In</button>
+        </div>
+        <div class="login-error" id="login-error"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MENU PAGE ═══ -->
+  <div class="page" id="page-menu">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-logo">&#9749; Brew &amp; Co</div>
+        <div class="topbar-cashier" id="cashier-name">Cashier: &mdash;</div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-signout" onclick="Auth.signOut()">Sign Out</button>
+      </div>
+    </div>
+    <div class="menu-layout">
+      <div class="menu-panel">
+        <div class="category-tabs" id="cat-tabs"></div>
+        <div class="menu-grid" id="menu-grid"></div>
+      </div>
+      <div class="order-panel">
+        <div class="order-title">
+          Current Order
+          <span class="order-count" id="order-count">0</span>
+        </div>
+        <div class="order-items" id="order-items">
+          <div class="order-empty">
+            <span class="empty-icon">&#128721;</span>
+            No items yet.<br>Tap a menu item to add.
+          </div>
+        </div>
+        <div class="order-totals">
+          <div class="total-row"><span>Subtotal</span><span id="sub-total">$0.00</span></div>
+          <div class="total-row"><span>Tax (8.5%)</span><span id="tax-total">$0.00</span></div>
+          <div class="total-row grand"><span>Total</span><span id="grand-total">$0.00</span></div>
+        </div>
+        <button class="btn-checkout" id="btn-checkout" onclick="Payment.goTo()" disabled>
+          Proceed to Payment &rarr;
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAYMENT PAGE ═══ -->
+  <div class="page" id="page-payment">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-logo">&#9749; Brew &amp; Co</div>
+        <div class="topbar-cashier">Payment</div>
+      </div>
+    </div>
+    <div class="payment-layout">
+      <div class="payment-main">
+        <h2>Select Payment Method</h2>
+        <p class="subtitle">Choose how the customer would like to pay.</p>
+        <div class="payment-methods">
+          <div class="pay-method" id="pm-cash" onclick="Payment.selectMethod('cash')">
+            <span class="pm-icon">&#128181;</span>
+            <div class="pm-name">Cash</div>
+            <div class="pm-sub">Count change</div>
+          </div>
+          <div class="pay-method" id="pm-card" onclick="Payment.selectMethod('card')">
+            <span class="pm-icon">&#128179;</span>
+            <div class="pm-name">Card</div>
+            <div class="pm-sub">Tap, swipe or chip</div>
+          </div>
+          <div class="pay-method" id="pm-mobile" onclick="Payment.selectMethod('mobile')">
+            <span class="pm-icon">&#128241;</span>
+            <div class="pm-name">Mobile Pay</div>
+            <div class="pm-sub">Apple / Google Pay</div>
+          </div>
+        </div>
+
+        <!-- Cash -->
+        <div class="cash-section" id="cash-section">
+          <h3>Cash Tendered</h3>
+          <div class="cash-quick" id="cash-quick-btns"></div>
+          <div class="cash-input-wrap">
+            <label>Custom amount: $</label>
+            <input class="cash-input" type="number" id="cash-input" placeholder="0.00" min="0" step="0.01" oninput="Payment.calcChange()">
+          </div>
+          <div class="change-display">
+            <div>
+              <div class="change-label">Change Due</div>
+              <div class="change-amount" id="change-due">$0.00</div>
+            </div>
+            <span style="font-size:32px">&#128176;</span>
+          </div>
+        </div>
+
+        <!-- Card -->
+        <div class="card-section" id="card-section">
+          <div class="card-terminal">
+            <span class="terminal-icon">&#128179;</span>
+            <div class="terminal-title">Awaiting Card</div>
+            <div class="terminal-sub">Please tap, insert, or swipe card on terminal</div>
+            <div class="terminal-animate">
+              <div class="dot-pulse"></div><div class="dot-pulse"></div><div class="dot-pulse"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile -->
+        <div class="card-section" id="mobile-section">
+          <div class="card-terminal">
+            <span class="terminal-icon">&#128242;</span>
+            <div class="terminal-title">Hold Device to Reader</div>
+            <div class="terminal-sub">Apple Pay or Google Pay</div>
+            <div class="terminal-animate">
+              <div class="dot-pulse"></div><div class="dot-pulse"></div><div class="dot-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Receipt -->
+      <div class="receipt-panel">
+        <div class="receipt-logo">
+          <h3>&#9749; Brew &amp; Co</h3>
+          <p>123 Main St &middot; Long Branch, NJ &middot; (732) 555-0190</p>
+        </div>
+        <div class="receipt-items" id="receipt-items"></div>
+        <hr class="receipt-divider">
+        <div class="receipt-totals">
+          <div class="receipt-row"><span>Subtotal</span><span id="r-sub">$0.00</span></div>
+          <div class="receipt-row"><span>Tax (8.5%)</span><span id="r-tax">$0.00</span></div>
+          <div class="receipt-row total"><span>Total</span><span id="r-total">$0.00</span></div>
+        </div>
+        <button class="btn-complete-pay" id="btn-complete-pay" onclick="Payment.complete()">
+          &#10003; Complete Payment
+        </button>
+        <button class="btn-back-menu" onclick="Payment.back()">&larr; Back to Order</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CUSTOMIZATION MODAL ═══ -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <span class="modal-emoji" id="mod-emoji"></span>
+          <div class="modal-title" id="mod-title"></div>
+          <div class="modal-price" id="mod-price"></div>
+        </div>
+        <button class="modal-close" onclick="MenuController.closeModal()">&#10005;</button>
+      </div>
+      <div id="modal-customs"></div>
+      <div class="custom-section">
+        <div class="custom-section-title">Special Instructions</div>
+        <textarea class="notes-input" id="mod-notes" placeholder="E.g. extra hot, no foam, allergy info..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="MenuController.closeModal()">Cancel</button>
+        <button class="btn-add-order" onclick="MenuController.addToOrder()">Add to Order</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SUCCESS OVERLAY ═══ -->
+  <div class="success-overlay" id="success-overlay">
+    <div class="success-icon">&#9989;</div>
+    <h2>Payment Complete!</h2>
+    <p>Thank you for visiting Brew &amp; Co</p>
+    <div class="success-change" id="success-change-box" style="display:none">
+      <div class="sc-label">Change Due</div>
+      <div class="sc-amount" id="success-change-amt"></div>
+    </div>
+    <button class="btn-new-order" onclick="Payment.newOrder()">Start New Order</button>
+  </div>
+
+  <!-- Scripts loaded in dependency order -->
+  <script src="js/data.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/menu.js"></script>
+  <script src="js/payment.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
