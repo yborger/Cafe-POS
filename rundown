@@ -1,0 +1,225 @@
+CafePOS — One Page Development Roadmap
+
+Product Definition (Human)
+
+Goal: Build a fast, touch-optimized POS system for small cafés that minimizes taps and supports rush-hour workflows.
+
+Primary Users
+
+Cashier
+
+Manager
+
+Core Features
+
+Browse menu by category
+
+Add/remove items from cart
+
+Modify items (size, milk, extras)
+
+Checkout (card, cash, split payment)
+
+Track order lifecycle
+
+Order Lifecycle
+draft → paid → preparing → ready → completed
+
+System Design (Human)
+
+Architecture
+
+POS Tablet (Client)
+↓
+Next.js / React Frontend
+↓
+Node / Express API
+↓
+PostgreSQL Database
+↓
+Payment Provider (Stripe)
+
+Core Data Entities
+
+User
+
+MenuItem
+
+Order
+
+OrderItem
+
+Payment
+
+Component Structure
+
+POSLayout
+├── CategorySidebar
+├── ItemGrid
+├── CartPanel
+└── CheckoutModal
+
+System Behavior (Human)
+
+Data Flow
+
+User taps item
+→ item added to cart
+→ cart recalculates total
+→ UI updates instantly
+
+State Model
+
+Menu state
+
+Cart state
+
+Order state
+
+User session state
+
+Key Edge Cases
+
+Item becomes unavailable mid-order
+
+Accidental double-tap adds duplicate items
+
+Payment fails
+
+Network disconnect during checkout
+
+Split payments
+
+AI-Assisted Scaffolding (AI)
+
+Use AI tools to generate repetitive setup work.
+
+Generate Types
+
+User
+
+MenuItem
+
+Order
+
+OrderItem
+
+Payment
+
+Generate API Routes
+/api/orders
+/api/menu
+/api/payments
+
+Generate UI Boilerplate
+
+Button
+
+Modal
+
+ItemCard
+
+CartItem
+
+CategorySidebar
+
+Generate Mock Data
+
+Menu items
+
+Orders
+
+Users
+
+Core Engineering Implementation (Human)
+
+Focus on the logic requiring real engineering decisions.
+
+Key areas
+
+Cart state and price calculations
+
+Order lifecycle transitions
+
+Payment handling
+
+Inventory updates
+
+State management architecture
+
+Optimize for
+
+minimal API calls
+
+optimistic UI updates
+
+fast interaction speed
+
+Reliability & Error Handling (Human)
+
+Implement robust handling for real-world conditions.
+
+Examples
+
+payment fails → retry modal
+offline → cache orders locally
+duplicate taps → debounce item addition
+
+Testing (AI + Human)
+
+Use AI to scaffold tests, then refine manually.
+
+Test Types
+
+Unit tests for cart calculations
+
+API endpoint tests
+
+Component interaction tests
+
+Optional AI Feature (Human-Designed)
+
+Add a lightweight AI insight feature.
+
+Examples
+
+Top-selling items for the day
+
+Suggested menu bundles
+
+Simple sales trend summaries
+
+Portfolio Documentation (Human)
+
+Document the project clearly in the repository.
+
+README Sections
+
+Project overview
+
+System architecture
+
+Database schema
+
+API design
+
+Edge cases handled
+
+AI-assisted development process
+
+Example section
+
+AI-Assisted Development
+AI was used for component scaffolding, type generation, and basic CRUD route setup. All architecture, system behavior, edge cases, and engineering decisions were designed manually.
+
+Final Outcome
+
+This project demonstrates
+
+Full-stack engineering
+
+Real-world system design
+
+Product thinking
+
+Effective AI-assisted development
