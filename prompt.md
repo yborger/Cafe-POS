@@ -7,16 +7,16 @@
 
 ### Business Information
 
-- **Business Name:** Aurora Brew Café  
-- **Industry:** Specialty Coffee + Light Brunch  
-- **Location:** Urban neighborhood with high foot traffic  
+- **Business Name:** []  
+- **Industry:** [coffee]  
+- **Location:** Urban neighborhood  
 
 ### Target Audience
 
-- Remote workers (ages 22–40)  
-- Students  
-- Young professionals  
-- Weekend brunch crowd  
+- [?]
+-   [?]
+-   [?]
+-   [?]
 
 ### Brand Personality
 
@@ -28,19 +28,19 @@
 
 ### Brand Positioning Statement
 
-> Aurora Brew Café is a modern neighborhood coffee shop offering ethically sourced coffee, seasonal brunch, and a welcoming space for connection and productivity.
+> ex. Aurora Brew Café is a modern neighborhood coffee shop offering ethically sourced coffee, seasonal brunch, and a welcoming space for connection and productivity.
 
 ---
 
 ## 2. Visual Identity Guidelines
 
 ### Logo
-
+ex.
 - Minimal sunrise icon integrated into typography  
 - Clean sans-serif logotype  
 - Flat design, scalable  
 
-### Color Palette
+### Color Palette (ex)
 
 #### Primary Colors
 
